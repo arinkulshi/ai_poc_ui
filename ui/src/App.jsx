@@ -239,26 +239,26 @@ function App() {
     setQuery(searchQuery);
     setView("results");
 
-    // Offline / demo mode: return mocked results so UI works without backend
-    // This simulates a small network delay and creates plausible demo items
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    try {
+      const response = await fetch("http://localhost:8080/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: searchQuery }),
+      });
+      const data = await response.json();
 
-    const mockResults = Array.from({ length: 5 }).map((_, i) => ({
-      id: `${Date.now()}-${i}`,
-      title: `${searchQuery} — Result ${i + 1}`,
-      date: new Date().toISOString(),
-      url: `https://fake-archive.example/record/${i + 1}`,
-      snippet: `<p>Mock snippet for <strong>${searchQuery}</strong> — result ${
-        i + 1
-      }.</p>`,
-      author: "Demo Author",
-      to: "Demo Recipient",
-      agency: "Mock Archives",
-      body: "No content available.",
-    }));
-
-    setResults(mockResults);
-    setLoading(false);
+      if (!response.ok) {
+        console.error("Search error:", data.error);
+        setResults([]);
+      } else {
+        setResults(data.results || []);
+      }
+    } catch (err) {
+      console.error("Search failed:", err);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClear = () => {

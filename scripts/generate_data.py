@@ -1,7 +1,9 @@
+"""Generate dummy email data for testing."""
 import json
 import random
 import uuid
 from datetime import datetime, timedelta
+from pathlib import Path
 from faker import Faker
 
 fake = Faker()
@@ -21,29 +23,36 @@ TOPICS = [
 
 AGENCIES = ["NSC", "WHO", "OSTP", "OMB"]
 
+# Output to project root
+OUTPUT_PATH = Path(__file__).resolve().parent.parent / "dummy_emails.jsonl"
+
+
 def generate_email():
-    # Pick a topic to ensure semantic consistency
     topic = random.choice(TOPICS)
-    
-    # Generate realistic dates (Clinton era: 1993-2001)
+
     start_date = datetime(1993, 1, 20)
     end_date = datetime(2001, 1, 20)
     days_between = (end_date - start_date).days
     random_days = random.randrange(days_between)
     date_obj = start_date + timedelta(days=random_days)
-    
-    # Construct the "Clean" body text
-    # We inject the topic into the body to ensure vector similarity works
-    body_text = f"Regarding the {topic}: \n\n" + fake.paragraph(nb_sentences=5) + "\n\n" + fake.paragraph(nb_sentences=3)
 
-    # Construct the Document object structure expected by Agent Builder
-    # Root fields must match the google.cloud.discoveryengine.v1.Document proto
+    body_text = (
+        f"Regarding the {topic}: \n\n"
+        + fake.paragraph(nb_sentences=5)
+        + "\n\n"
+        + fake.paragraph(nb_sentences=3)
+    )
+
     return {
         "id": str(uuid.uuid4()),
         "structData": {
             "email_id": fake.random_int(min=10000, max=99999),
             "subject": f"Memo: {topic} - {fake.catch_phrase()}",
-            "abstract": f"This record discusses the {topic} strategy. Key points include {fake.bs()} and the impact on {fake.job()}. Authored by {fake.last_name()} for review by the {random.choice(AGENCIES)}.",
+            "abstract": (
+                f"This record discusses the {topic} strategy. "
+                f"Key points include {fake.bs()} and the impact on {fake.job()}. "
+                f"Authored by {fake.last_name()} for review by the {random.choice(AGENCIES)}."
+            ),
             "date": date_obj.isoformat(),
             "author": f"{fake.last_name()}@eop.gov",
             "to": ", ".join([f"{fake.last_name()}@eop.gov" for _ in range(random.randint(1, 5))]),
@@ -54,11 +63,11 @@ def generate_email():
         }
     }
 
-# Generate and Save
-print(f"Generating {NUM_EMAILS} dummy emails...")
-with open("dummy_emails.jsonl", "w") as f:
-    for _ in range(NUM_EMAILS):
-        email = generate_email()
-        f.write(json.dumps(email) + "\n")
 
-print("Done! File 'dummy_emails.jsonl' created.")
+if __name__ == "__main__":
+    print(f"Generating {NUM_EMAILS} dummy emails...")
+    with open(OUTPUT_PATH, "w") as f:
+        for _ in range(NUM_EMAILS):
+            email = generate_email()
+            f.write(json.dumps(email) + "\n")
+    print(f"Done! File '{OUTPUT_PATH}' created.")
