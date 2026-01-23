@@ -1,0 +1,390 @@
+:root {
+  /* Core Colors */
+  --color-navy-bg: #0B1E36;
+  --color-navy-gradient-start: #0B1E36;
+  --color-navy-gradient-end: #20579C;
+  --color-teal-accent: #4AA3A2;
+  --color-text-white: #FFFFFF;
+  --color-text-subtle: #5C5E60;
+  --color-bg-secondary: #F9FAFB;
+  --color-border-medium: #CBCED1;
+  --color-bg-white: #FFFFFF;
+
+  /* Typography */
+  --font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Landing Page Styles */
+.landing-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: linear-gradient(0deg, rgba(11, 30, 54, 0.30) 0%, rgba(11, 30, 54, 0.30) 100%),
+    linear-gradient(318deg, var(--color-navy-gradient-start) 0%, var(--color-navy-gradient-end) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-text-white);
+  overflow: hidden;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.logo-main {
+  font-size: 60px;
+  line-height: 90px;
+  display: flex;
+  gap: 0;
+}
+
+.logo-buddy {
+  color: #FFFEF4;
+  font-weight: 400;
+}
+
+.logo-fetch {
+  color: var(--color-teal-accent);
+  font-weight: 700;
+}
+
+.logo-subtitle {
+  font-size: 20px;
+  color: #FFFEF4;
+  margin-top: -10px;
+}
+
+/* Dog Logo Placeholder - simplified CSS representation of the vector */
+.dog-icon {
+  width: 80px;
+  height: 80px;
+  background: #289B9F;
+  border-radius: 50%;
+  margin-bottom: 20px;
+  /* Ideally use an SVG here, simpler placeholder for now */
+}
+
+
+.search-wrapper {
+  width: 872px;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-input-container {
+  flex: 1;
+  height: 54px;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  outline: 1px solid var(--color-border-medium);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0px 1px 0.5px rgba(29, 41, 61, 0.02);
+}
+
+.search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--color-text-subtle);
+  outline: none;
+}
+
+.search-button {
+  width: 112px;
+  height: 54px;
+  background: var(--color-teal-accent);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.search-button:hover {
+  opacity: 0.9;
+}
+
+.suggestions-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.suggestion-chip {
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.suggestion-chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Results Page Styles */
+.results-container {
+  background: var(--color-bg-white);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.results-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border-medium);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  /* To help center the search bar, we can treat this as a grid or just rely on margins */
+}
+
+.results-header-logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-navy-bg);
+  cursor: pointer;
+  /* Ensure logo doesn't shrink */
+  min-width: max-content;
+}
+
+.results-search-bar {
+  /* Remove flex: 1 to stop it filling space unevenly */
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  gap: 12px;
+  /* Center in the available space */
+  margin-left: auto;
+  margin-right: auto;
+  /* Add a slight offset to the left to counteract the logo width if we want visual perfection, 
+     but auto margins usually feel "centered enough" in modern navs. 
+     To make it feel more "centered" relative to the page, we can translate it slightly if needed,
+     but let's stick to auto margins first.
+  */
+}
+
+.results-list {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.result-card {
+  padding: 20px;
+  border: 1px solid var(--color-border-medium);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.result-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.result-subject {
+  color: var(--color-teal-accent);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.result-meta {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+}
+
+.result-snippet {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Drawer Styles */
+/* Drawer Styles */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 30, 54, 0.6);
+  /* Slightly darker/tinted backdrop */
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drawer-panel {
+  width: 700px;
+  /* Wider for better reading experience */
+  height: 100%;
+  background: white;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+  overflow-y: auto;
+  position: relative;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Smoother bezier */
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--color-text-subtle);
+  transition: all 0.2s;
+  z-index: 20;
+}
+
+.drawer-close:hover {
+  background: #e5e7eb;
+  color: var(--color-navy-bg);
+}
+
+.drawer-header {
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--color-border-medium);
+  padding-bottom: 24px;
+}
+
+.drawer-title {
+  font-size: 24px;
+  line-height: 1.3;
+  color: var(--color-navy-bg);
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 24px;
+  padding-right: 40px;
+  /* Space for close button */
+}
+
+.drawer-meta-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.drawer-meta-row strong {
+  min-width: 60px;
+  color: var(--color-navy-bg);
+}
+
+.action-link {
+  font-size: 14px;
+  color: var(--color-teal-accent);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.action-link:hover {
+  color: #3A8584;
+  /* Darker teal */
+}
+
+.drawer-body {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #2D3748;
+}
+
+.content-section {
+  margin-bottom: 24px;
+}
+
+.content-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-subtle);
+  font-weight: 600;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  display: block;
+}
+
+.email-body-text {
+  white-space: pre-wrap;
+  font-family: 'Inter', sans-serif;
+  /* Ensure readable font */
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-teal-accent);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

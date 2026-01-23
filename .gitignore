@@ -1,0 +1,15 @@
+# Credentials
+credentials.json
+.env
+
+# Environments
+venv/
+__pycache__/
+*.pyc
+
+# System files
+.DS_Store
+
+# UI dependencies
+ui/node_modules/
+ui/dist/
