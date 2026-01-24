@@ -1,5 +1,27 @@
+import hashlib
+import hmac
 from flask import request, jsonify
+from api.config import APP_PASSWORD
 from api.services.search import search_documents
+
+
+def _generate_token(password):
+    """Generate a stateless token from the password."""
+    return hmac.new(password.encode(), b"buddy-fetch-auth", hashlib.sha256).hexdigest()
+
+
+def _check_auth():
+    """Validate the Authorization header token. Returns error response or None."""
+    if not APP_PASSWORD:
+        return None  # No password configured, allow all
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return jsonify({"error": "Unauthorized"}), 401
+    token = auth[len("Bearer "):]
+    expected = _generate_token(APP_PASSWORD)
+    if not hmac.compare_digest(token, expected):
+        return jsonify({"error": "Unauthorized"}), 401
+    return None
 
 
 def register_routes(app):
@@ -9,8 +31,23 @@ def register_routes(app):
     def health():
         return jsonify({"status": "ok"})
 
+    @app.route('/verify-password', methods=['POST'])
+    def verify_password():
+        if not APP_PASSWORD:
+            return jsonify({"token": "no-auth-required"})
+        data = request.json or {}
+        password = data.get('password', '')
+        if not hmac.compare_digest(password, APP_PASSWORD):
+            return jsonify({"error": "Invalid password"}), 401
+        token = _generate_token(APP_PASSWORD)
+        return jsonify({"token": token})
+
     @app.route('/search', methods=['POST'])
     def search():
+        auth_error = _check_auth()
+        if auth_error:
+            return auth_error
+
         data = request.json
         query = data.get('query', '')
 

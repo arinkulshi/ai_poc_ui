@@ -52,18 +52,38 @@ def search_documents(query: str) -> list:
         data = result.document.derived_struct_data
         doc_data = result.document.struct_data
 
-        title = data.get("title") or doc_data.get("subject") or "No Title"
+        title = doc_data.get("subject") or data.get("title") or "No Subject"
 
+        # Prefer highlighted snippets (contain <b> tags for matched terms)
         snippet = ""
-        if doc_data.get("abstract"):
-            snippet = str(doc_data.get("abstract"))
-        elif doc_data.get("text_content"):
-            snippet = str(doc_data.get("text_content"))[:300] + "..."
+        if data.get("snippets"):
+            for s in data["snippets"]:
+                if s.get("snippet"):
+                    snippet = s["snippet"]
+                    break
 
-        if data.get("extractive_segments"):
+        if not snippet and data.get("extractive_segments"):
             seg = data["extractive_segments"][0].get("content", "")
             if seg:
                 snippet = seg
+
+        # Fallback to body content (handles both Enron and Clinton data formats)
+        if not snippet:
+            body_text = (doc_data.get("body")
+                         or doc_data.get("text_content")
+                         or doc_data.get("abstract")
+                         or "")
+            if body_text:
+                snippet = body_text[:300] + ("..." if len(body_text) > 300 else "")
+
+        # Resolve fields across both data formats
+        author = (doc_data.get("sender_name")
+                  or doc_data.get("sender")
+                  or doc_data.get("author")
+                  or "Unknown")
+        body = (doc_data.get("body")
+                or doc_data.get("text_content")
+                or "No content available.")
 
         results.append({
             "id": result.document.id,
@@ -72,10 +92,10 @@ def search_documents(query: str) -> list:
             "url": doc_data.get("url", "#"),
             "date": doc_data.get("date", ""),
             "score": result.document.id,
-            "body": doc_data.get("text_content", "No content available."),
-            "author": doc_data.get("author", "Unknown"),
-            "to": doc_data.get("to", "Unknown"),
-            "agency": doc_data.get("agency", "Unknown"),
+            "body": body,
+            "author": author,
+            "to": doc_data.get("to_name") or doc_data.get("to", "Unknown"),
+            "folder": doc_data.get("folder") or doc_data.get("agency", ""),
         })
 
     return results
