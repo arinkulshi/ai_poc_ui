@@ -1,0 +1,11 @@
+venv/
+node_modules/
+ui/node_modules/
+.env
+credentials.json
+dummy_emails.jsonl
+__pycache__/
+*.pyc
+.git/
+scripts/
+ui/dist/

@@ -1,0 +1,28 @@
+# Credentials & secrets
+.env
+credentials.json
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+ui/node_modules/
+
+# Build artifacts
+ui/dist/
+
+# Data files (not needed for the container)
+dummy_emails.jsonl
+*.jsonl
+
+# Dev/utility files
+scripts/
+.git/
+.gitignore
+.dockerignore
+deploy.sh
+*.md
+.DS_Store
