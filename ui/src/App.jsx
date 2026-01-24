@@ -59,17 +59,13 @@ const LandingView = ({ onSearch, initialQuery }) => {
           </button>
           <button
             className="suggestion-chip"
-            onClick={() =>
-              onSearch("California energy crisis power prices")
-            }
+            onClick={() => onSearch("California energy crisis power prices")}
           >
             California energy crisis power prices
           </button>
           <button
             className="suggestion-chip"
-            onClick={() =>
-              onSearch("natural gas trading strategies")
-            }
+            onClick={() => onSearch("natural gas trading strategies")}
           >
             natural gas trading strategies
           </button>
@@ -97,9 +93,7 @@ const ResultCard = ({ result, onClick }) => {
       <div className="result-meta">
         <span className="result-date">{dateStr}</span>
         <span className="result-separator">&bull;</span>
-        <span className="result-source">
-          {result.folder || "Email"}
-        </span>
+        <span className="result-source">{result.folder || "Email"}</span>
         {result.author && (
           <>
             <span className="result-separator">&bull;</span>
@@ -118,15 +112,73 @@ const ResultCard = ({ result, onClick }) => {
   );
 };
 
+const SummaryCard = ({ summary, summaryRefs, results, onResultClick }) => {
+  if (!summary) return null;
+
+  // Replace [N] and [N, M, ...] citation markers with clickable links
+  const renderSummaryWithCitations = () => {
+    const parts = summary.split(/(\[\d+(?:,\s*\d+)*\])/g);
+    return parts.map((part, i) => {
+      const match = part.match(/^\[(\d+(?:,\s*\d+)*)\]$/);
+      if (match) {
+        const indices = match[1].split(/,\s*/).map((n) => parseInt(n, 10) - 1);
+        return indices.map((refIndex, j) => {
+          const ref = summaryRefs[refIndex];
+          const matchedResult = ref
+            ? results.find((r) => ref.document && ref.document.includes(r.id))
+            : null;
+          return (
+            <button
+              key={`${i}-${j}`}
+              className="citation-link"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (matchedResult) onResultClick(matchedResult);
+              }}
+              title={ref?.title || `Reference ${refIndex + 1}`}
+            >
+              [{refIndex + 1}]
+            </button>
+          );
+        });
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
+  return (
+    <div className="summary-card">
+      <div className="summary-header">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M8 1L10 5.5L15 6.5L11.5 10L12.5 15L8 12.5L3.5 15L4.5 10L1 6.5L6 5.5L8 1Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span>AI Summary Of First 5 Emails</span>
+      </div>
+      <p className="summary-text">{renderSummaryWithCitations()}</p>
+    </div>
+  );
+};
+
 const ResultsView = ({
   results,
   query,
+  summary,
+  summaryRefs,
   onSearch,
   loading,
   onResultClick,
   onClear,
+  currentPage,
+  totalResults,
+  pageSize,
 }) => {
   const [localQuery, setLocalQuery] = useState(query);
+  const totalPages = Math.ceil(totalResults / pageSize);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") onSearch(localQuery);
@@ -196,9 +248,17 @@ const ResultsView = ({
           </div>
         ) : (
           <>
+            <SummaryCard
+              summary={summary}
+              summaryRefs={summaryRefs}
+              results={results}
+              onResultClick={onResultClick}
+            />
             <div className="results-count">
               <span className="results-count-number">
-                {results.length} results for{" "}
+                Showing {(currentPage - 1) * pageSize + 1}–
+                {Math.min(currentPage * pageSize, totalResults)} of{" "}
+                {totalResults} results for{" "}
               </span>
               <span className="results-count-query">"{query}"</span>
             </div>
@@ -207,6 +267,27 @@ const ResultsView = ({
                 <ResultCard key={r.id} result={r} onClick={onResultClick} />
               ))}
             </div>
+            {totalPages > 1 && (
+              <div className="pagination-bar">
+                <button
+                  className="pagination-button"
+                  disabled={currentPage <= 1}
+                  onClick={() => onSearch(query, currentPage - 1)}
+                >
+                  Previous
+                </button>
+                <span className="pagination-info">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="pagination-button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => onSearch(query, currentPage + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -282,13 +363,12 @@ const EmailDrawer = ({ email, onClose }) => {
         <div className="drawer-body">
           <div className="drawer-content-section">
             <h3 className="drawer-content-label">Email Body</h3>
-            <div className="drawer-content-text">
-              {email.body && email.body !== "No content available." ? (
-                <p>{email.body}</p>
-              ) : (
-                <div dangerouslySetInnerHTML={{ __html: email.snippet }} />
-              )}
-            </div>
+            <div
+              className="drawer-content-text"
+              dangerouslySetInnerHTML={{
+                __html: email.body || email.snippet || "No content available.",
+              }}
+            />
           </div>
         </div>
       </div>
@@ -367,7 +447,9 @@ const PasswordGate = ({ onAuthenticated }) => {
             Enter
           </button>
         </div>
-        {error && <p style={{ color: "#e74c3c", marginTop: "0.5rem" }}>{error}</p>}
+        {error && (
+          <p style={{ color: "#e74c3c", marginTop: "0.5rem" }}>{error}</p>
+        )}
       </div>
     </div>
   );
@@ -375,21 +457,27 @@ const PasswordGate = ({ onAuthenticated }) => {
 
 function App() {
   const [authToken, setAuthToken] = useState(
-    sessionStorage.getItem("auth_token")
+    sessionStorage.getItem("auth_token"),
   );
   const [view, setView] = useState("landing");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
+  const [summary, setSummary] = useState("");
+  const [summaryRefs, setSummaryRefs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const pageSize = 10;
 
   if (!authToken) {
     return <PasswordGate onAuthenticated={setAuthToken} />;
   }
 
-  const performSearch = async (searchQuery) => {
+  const performSearch = async (searchQuery, page = 1) => {
     setLoading(true);
     setQuery(searchQuery);
+    setCurrentPage(page);
     setView("results");
 
     try {
@@ -397,9 +485,9 @@ function App() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ query: searchQuery }),
+        body: JSON.stringify({ query: searchQuery, page, page_size: pageSize }),
       });
       const data = await response.json();
 
@@ -412,12 +500,19 @@ function App() {
       if (!response.ok) {
         console.error("Search error:", data.error);
         setResults([]);
+        setSummary("");
+        setSummaryRefs([]);
+        setTotalResults(0);
       } else {
         setResults(data.results || []);
+        setSummary(data.summary || "");
+        setSummaryRefs(data.summary_references || []);
+        setTotalResults(data.total_size || 0);
       }
     } catch (err) {
       console.error("Search failed:", err);
       setResults([]);
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
@@ -427,7 +522,11 @@ function App() {
     setView("landing");
     setQuery("");
     setResults([]);
+    setSummary("");
+    setSummaryRefs([]);
     setSelectedEmail(null);
+    setCurrentPage(1);
+    setTotalResults(0);
   };
 
   return (
@@ -438,10 +537,15 @@ function App() {
         <ResultsView
           results={results}
           query={query}
+          summary={summary}
+          summaryRefs={summaryRefs}
           onSearch={performSearch}
           loading={loading}
           onResultClick={setSelectedEmail}
           onClear={handleClear}
+          currentPage={currentPage}
+          totalResults={totalResults}
+          pageSize={pageSize}
         />
       )}
 

@@ -1,4 +1,4 @@
-"""List all data stores in the configured GCP project."""
+"""List all data stores and engines in the configured GCP project."""
 import sys
 from pathlib import Path
 
@@ -34,8 +34,36 @@ def list_data_stores():
             print("No data stores found. Check Project ID and Location.")
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error listing data stores: {e}")
+
+
+def list_engines():
+    client_options = (
+        ClientOptions(api_endpoint=f"{LOCATION}-discoveryengine.googleapis.com")
+        if LOCATION != "global"
+        else None
+    )
+    client = discoveryengine.EngineServiceClient(client_options=client_options)
+    parent = f"projects/{PROJECT_ID}/locations/{LOCATION}/collections/default_collection"
+
+    print(f"\nListing Engines in: {parent}")
+    try:
+        response = client.list_engines(parent=parent)
+        found = False
+        for engine in response:
+            found = True
+            print(f"Display Name: {engine.display_name}")
+            print(f"ID: {engine.name.split('/')[-1]}")
+            print(f"Full Name: {engine.name}")
+            print("-" * 20)
+
+        if not found:
+            print("No engines found. You may need to create an engine and link it to a data store.")
+
+    except Exception as e:
+        print(f"Error listing engines: {e}")
 
 
 if __name__ == "__main__":
     list_data_stores()
+    list_engines()

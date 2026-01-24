@@ -50,13 +50,24 @@ def register_routes(app):
 
         data = request.json
         query = data.get('query', '')
+        page = data.get('page', 1)
+        page_size = data.get('page_size', 10)
 
         if not query:
             return jsonify({"error": "No query provided"}), 400
 
+        offset = (page - 1) * page_size
+
         try:
-            results = search_documents(query)
-            return jsonify({"results": results})
+            data = search_documents(query, offset=offset, page_size=page_size)
+            return jsonify({
+                "results": data["results"],
+                "total_size": data["total_size"],
+                "page": page,
+                "page_size": page_size,
+                "summary": data["summary"],
+                "summary_references": data["summary_references"],
+            })
         except Exception as e:
             print(f"Error during search: {e}")
             return jsonify({"error": str(e)}), 500

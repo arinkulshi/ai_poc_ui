@@ -8,8 +8,8 @@ load_dotenv(_project_root / ".env")
 
 # --- GCP Configuration ---
 PROJECT_ID = os.getenv("PROJECT_ID")
-DATA_STORE_ID = os.getenv("DATA_STORE_ID")
-LOCATION = os.getenv("LOCATION", "us")
+ENGINE_ID = os.getenv("ENGINE_ID")
+LOCATION = os.getenv("LOCATION", "global")
 
 # Resolve credentials path relative to project root if not absolute.
 # On Cloud Run, ADC is used automatically so credentials.json is not needed.
