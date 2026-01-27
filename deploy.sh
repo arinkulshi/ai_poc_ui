@@ -25,7 +25,7 @@ IMAGE="us-central1-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/app"
 # --- Check for required password ---
 if [ -z "$APP_PASSWORD" ]; then
   echo "ERROR: Set APP_PASSWORD environment variable before deploying."
-  echo "  export APP_PASSWORD='eron_sucks_1234'"
+  echo "  export APP_PASSWORD=''"
   exit 1
 fi
 
@@ -38,7 +38,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --region "${REGION}" \
   --project "${PROJECT_ID}" \
   --allow-unauthenticated \
-  --set-env-vars "PROJECT_ID=${PROJECT_ID},DATA_STORE_ID=eron-data-01_1769215596289,LOCATION=global,APP_PASSWORD=${APP_PASSWORD}" \
+  --set-env-vars "PROJECT_ID=${PROJECT_ID},ENGINE_ID=eron-unstructured-search_1769235093331,LOCATION=global,APP_PASSWORD=${APP_PASSWORD}" \
   --max-instances 3 \
   --memory 512Mi \
   --timeout 120
