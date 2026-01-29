@@ -942,3 +942,123 @@ body {
   color: var(--color-text-subtle);
   font-weight: 500;
 }
+
+/* ========================================
+   Filters
+   ======================================== */
+
+.filter-toggle-button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-subtle);
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.filter-toggle-button:hover {
+  border-color: var(--color-teal-accent);
+  color: var(--color-teal-accent);
+}
+
+.filter-toggle-button.active {
+  background: var(--color-teal-accent);
+  border-color: var(--color-teal-accent);
+  color: white;
+}
+
+.filter-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: #e74c3c;
+  border-radius: 50%;
+}
+
+.filters-bar {
+  background: var(--color-bg-white);
+  border-bottom: 1px solid var(--color-border-light);
+  padding: 12px 80px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-input-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-subtle);
+  white-space: nowrap;
+}
+
+.filter-input-group input {
+  height: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border-medium);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-family-base);
+  color: var(--color-text-heading);
+  background: var(--color-bg-secondary);
+  min-width: 150px;
+  transition: all 0.2s ease;
+}
+
+.filter-input-group input:focus {
+  outline: none;
+  border-color: var(--color-teal-accent);
+  box-shadow: 0 0 0 2px rgba(74, 163, 162, 0.1);
+}
+
+.filter-input-group input::placeholder {
+  color: #9ca3af;
+}
+
+.clear-filters-button {
+  height: 32px;
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--color-border-medium);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-button:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+@media (max-width: 768px) {
+  .filters-bar {
+    padding: 12px 20px;
+  }
+
+  .filter-input-group {
+    width: 100%;
+  }
+
+  .filter-input-group input {
+    flex: 1;
+  }
+}

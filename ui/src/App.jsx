@@ -176,13 +176,30 @@ const ResultsView = ({
   currentPage,
   totalResults,
   pageSize,
+  filters,
+  onFiltersChange,
 }) => {
   const [localQuery, setLocalQuery] = useState(query);
+  const [showFilters, setShowFilters] = useState(false);
   const totalPages = Math.ceil(totalResults / pageSize);
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") onSearch(localQuery);
+    if (e.key === "Enter") onSearch(localQuery, 1, filters);
   };
+
+  const handleFilterChange = (field, value) => {
+    onFiltersChange({ ...filters, [field]: value });
+  };
+
+  const handleSearchClick = () => {
+    onSearch(localQuery, 1, filters);
+  };
+
+  const clearFilters = () => {
+    onFiltersChange({ sender: "", subject: "", to: "" });
+  };
+
+  const hasActiveFilters = filters.sender || filters.subject || filters.to;
 
   return (
     <div className="results-container">
@@ -233,12 +250,64 @@ const ResultsView = ({
           </div>
           <button
             className="results-search-button"
-            onClick={() => onSearch(localQuery)}
+            onClick={handleSearchClick}
           >
             Search
           </button>
+          <button
+            className={`filter-toggle-button ${showFilters ? "active" : ""}`}
+            onClick={() => setShowFilters(!showFilters)}
+            title="Toggle filters"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M2 4h12M4 8h8M6 12h4"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            {hasActiveFilters && <span className="filter-badge" />}
+          </button>
         </div>
       </div>
+
+      {showFilters && (
+        <div className="filters-bar">
+          <div className="filter-input-group">
+            <label>From:</label>
+            <input
+              type="text"
+              placeholder="sender email"
+              value={filters.sender}
+              onChange={(e) => handleFilterChange("sender", e.target.value)}
+            />
+          </div>
+          <div className="filter-input-group">
+            <label>To:</label>
+            <input
+              type="text"
+              placeholder="recipient email"
+              value={filters.to}
+              onChange={(e) => handleFilterChange("to", e.target.value)}
+            />
+          </div>
+          <div className="filter-input-group">
+            <label>Subject:</label>
+            <input
+              type="text"
+              placeholder="exact subject"
+              value={filters.subject}
+              onChange={(e) => handleFilterChange("subject", e.target.value)}
+            />
+          </div>
+          {hasActiveFilters && (
+            <button className="clear-filters-button" onClick={clearFilters}>
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="results-content">
         {loading ? (
@@ -272,7 +341,7 @@ const ResultsView = ({
                 <button
                   className="pagination-button"
                   disabled={currentPage <= 1}
-                  onClick={() => onSearch(query, currentPage - 1)}
+                  onClick={() => onSearch(query, currentPage - 1, filters)}
                 >
                   Previous
                 </button>
@@ -282,7 +351,7 @@ const ResultsView = ({
                 <button
                   className="pagination-button"
                   disabled={currentPage >= totalPages}
-                  onClick={() => onSearch(query, currentPage + 1)}
+                  onClick={() => onSearch(query, currentPage + 1, filters)}
                 >
                   Next
                 </button>
@@ -468,17 +537,24 @@ function App() {
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const [filters, setFilters] = useState({ sender: "", subject: "", to: "" });
   const pageSize = 10;
 
   if (!authToken) {
     return <PasswordGate onAuthenticated={setAuthToken} />;
   }
 
-  const performSearch = async (searchQuery, page = 1) => {
+  const performSearch = async (searchQuery, page = 1, searchFilters = filters) => {
     setLoading(true);
     setQuery(searchQuery);
     setCurrentPage(page);
     setView("results");
+
+    // Build filters object with only non-empty values
+    const activeFilters = {};
+    if (searchFilters.sender) activeFilters.sender = searchFilters.sender;
+    if (searchFilters.subject) activeFilters.subject = searchFilters.subject;
+    if (searchFilters.to) activeFilters.to = searchFilters.to;
 
     try {
       const response = await fetch(`${API_BASE}/search`, {
@@ -487,7 +563,12 @@ function App() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ query: searchQuery, page, page_size: pageSize }),
+        body: JSON.stringify({
+          query: searchQuery,
+          page,
+          page_size: pageSize,
+          filters: Object.keys(activeFilters).length > 0 ? activeFilters : undefined,
+        }),
       });
       const data = await response.json();
 
@@ -546,6 +627,8 @@ function App() {
           currentPage={currentPage}
           totalResults={totalResults}
           pageSize={pageSize}
+          filters={filters}
+          onFiltersChange={setFilters}
         />
       )}
 

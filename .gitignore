@@ -13,3 +13,5 @@ __pycache__/
 # UI dependencies
 ui/node_modules/
 ui/dist/
+ai_poc_project/output_unstructured
+output_unstructured/part_001/docs

@@ -3,7 +3,9 @@ from google.cloud import discoveryengine_v1 as discoveryengine
 from api.config import PROJECT_ID, LOCATION, ENGINE_ID
 
 
-def search_documents(query: str, offset: int = 0, page_size: int = 10) -> dict:
+from typing import Optional
+
+def search_documents(query: str, offset: int = 0, page_size: int = 10, filter_str: Optional[str] = None) -> dict:
     """Performs a search against the Vertex AI Search engine (unstructured data)."""
     client_options = (
         ClientOptions(api_endpoint=f"{LOCATION}-discoveryengine.googleapis.com")
@@ -40,6 +42,7 @@ def search_documents(query: str, offset: int = 0, page_size: int = 10) -> dict:
         query=query,
         page_size=page_size,
         offset=offset,
+        filter=filter_str,
         content_search_spec=content_search_spec,
         query_expansion_spec=discoveryengine.SearchRequest.QueryExpansionSpec(
             condition=discoveryengine.SearchRequest.QueryExpansionSpec.Condition.AUTO,

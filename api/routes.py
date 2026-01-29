@@ -53,20 +53,35 @@ def register_routes(app):
         page = data.get('page', 1)
         page_size = data.get('page_size', 10)
 
+        # Build filter string from individual filter fields
+        filters = data.get('filters', {})
+        filter_parts = []
+
+        # Supported filterable fields: sender, subject, to
+        # All use ANY() syntax for Discovery Engine
+        for field in ['sender', 'subject', 'to']:
+            value = filters.get(field)
+            if value:
+                escaped_value = value.replace('"', '\\"')
+                filter_parts.append(f'{field}: ANY("{escaped_value}")')
+
+        filter_str = ' AND '.join(filter_parts) if filter_parts else None
+
         if not query:
             return jsonify({"error": "No query provided"}), 400
 
         offset = (page - 1) * page_size
 
         try:
-            data = search_documents(query, offset=offset, page_size=page_size)
+            result = search_documents(query, offset=offset, page_size=page_size, filter_str=filter_str)
             return jsonify({
-                "results": data["results"],
-                "total_size": data["total_size"],
+                "results": result["results"],
+                "total_size": result["total_size"],
                 "page": page,
                 "page_size": page_size,
-                "summary": data["summary"],
-                "summary_references": data["summary_references"],
+                "summary": result["summary"],
+                "summary_references": result["summary_references"],
+                "applied_filter": filter_str,
             })
         except Exception as e:
             print(f"Error during search: {e}")
