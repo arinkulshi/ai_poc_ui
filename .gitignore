@@ -14,5 +14,4 @@ __pycache__/
 ui/node_modules/
 ui/dist/
 
-/Users/arindamkulshi/ai_poc_ui/ai_poc_project/output_unstructured
 output_unstructured/part_001/docs/
